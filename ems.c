@@ -68,14 +68,20 @@ void main (void) {
 	// does the same thing
 	
 	ppu_on_all(); //	turn on screen
-	// Infinite loop for now
 	
 	while (1){
-			if (NES_PAD1(PAD_LEFT))
-    {
-	put_str(NTADR_A(2, 4), "ya mama");
+		ppu_off(); // screen off
 
-    }
+	if (NES_PAD1(PAD_LEFT))
+		{
+		put_str(NTADR_A(2, 4), "ya mama left!");
+		}
+		if (NES_PAD1(PAD_RIGHT))
+		{
+		put_str(NTADR_A(2, 4), "ya mama right!");
+		}
+	ppu_on_all(); //	turn on screen
+
 	}
 }
 	

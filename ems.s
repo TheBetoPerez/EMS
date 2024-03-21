@@ -99,10 +99,12 @@ L00BC	:=	L00A5+0
 L00C4:
 	.byte	$50,$4C,$45,$41,$53,$45,$20,$53,$57,$49,$54,$43,$48,$20,$54,$4F
 	.byte	$20,$4E,$54,$53,$43,$00
+L019D:
+	.byte	$79,$61,$20,$6D,$61,$6D,$61,$20,$72,$69,$67,$68,$74,$21,$00
+L0190:
+	.byte	$79,$61,$20,$6D,$61,$6D,$61,$20,$6C,$65,$66,$74,$21,$00
 L0168:
 	.byte	$47,$4F,$20,$47,$41,$54,$4F,$52,$53,$21,$00
-L018F:
-	.byte	$79,$61,$20,$6D,$61,$6D,$61,$00
 L0173	:=	L00C4+17
 L017D:
 	.byte	$50,$41,$4C,$00
@@ -156,9 +158,9 @@ _update_list:
 	clc
 	adc     ptr1
 	ldx     ptr1+1
-	bcc     L0191
+	bcc     L01A0
 	inx
-L0191:	sta     _gp_addr
+L01A0:	sta     _gp_addr
 	stx     _gp_addr+1
 ;
 ; UPDATE_NT_BUF = MSB(gp_addr) | NT_UPD_HORZ; // Horizontal type text. change to NT_UPD_VERT for Vertical text
@@ -212,7 +214,7 @@ L0191:	sta     _gp_addr
 ;
 ; while (gpit--)
 ;
-	jmp     L0192
+	jmp     L01A1
 ;
 ; UPDATE_NT_BUF = *s++ + NES_TEXT_TILE_INDEX - 0x20;
 ;
@@ -246,7 +248,7 @@ L013A:	jsr     staxysp
 ;
 ; while (gpit--)
 ;
-L0192:	lda     _gpit
+L01A1:	lda     _gpit
 	dec     _gpit
 	tax
 	bne     L0133
@@ -554,22 +556,22 @@ L00E4:	rts
 ;
 ; else if (!ppu_system() && region_type == REGION_PAL || region_type == REGION_DENDY)
 ;
-	jmp     L0193
+	jmp     L01A2
 L009B:	jsr     _ppu_system
 	tax
 	bne     L00B4
 	lda     (sp,x)
 	cmp     #$01
-	beq     L0199
+	beq     L01A8
 L00B4:	ldy     #$00
 	lda     (sp),y
 	cmp     #$02
-	bne     L019A
+	bne     L01A9
 ;
 ; NES_GOTOXY(3, 15);
 ;
 	ldx     #$00
-L0199:	lda     #$03
+L01A8:	lda     #$03
 	sta     _xText
 	stx     _xText+1
 	lda     #$0F
@@ -605,11 +607,11 @@ L0199:	lda     #$03
 ; ppu_region = REGION_PAL;
 ;
 	lda     #$01
-L0193:	sta     _ppu_region
+L01A2:	sta     _ppu_region
 ;
 ; if (ppu_region <= REGION_DENDY)
 ;
-L019A:	lda     _ppu_region
+L01A9:	lda     _ppu_region
 	cmp     #$03
 	bcs     L00D1
 ;
@@ -703,7 +705,7 @@ L00D1:	jmp     incsp1
 ;
 	lda     #$04
 	sta     _fade_index
-L019B:	lda     _fade_index
+L01AA:	lda     _fade_index
 	beq     L00F9
 ;
 ; pal_bright(fade_index);
@@ -718,7 +720,7 @@ L019B:	lda     _fade_index
 ; for (fade_index = 4; fade_index > 0; fade_index--)
 ;
 	dec     _fade_index
-	jmp     L019B
+	jmp     L01AA
 ;
 ; }
 ;
@@ -741,7 +743,7 @@ L00F9:	rts
 ;
 	lda     #$00
 	sta     _fade_index
-L019C:	lda     _fade_index
+L01AB:	lda     _fade_index
 	cmp     #$05
 	bcs     L0106
 ;
@@ -757,7 +759,7 @@ L019C:	lda     _fade_index
 ; for (fade_index = 0; fade_index < 5; fade_index++)
 ;
 	inc     _fade_index
-	jmp     L019C
+	jmp     L01AB
 ;
 ; }
 ;
@@ -814,7 +816,7 @@ L0021:	lda     L001F,y
 ; for (i = 0; i < 16; ++i)
 ;
 	tay
-L019F:	sta     (sp),y
+L01AE:	sta     (sp),y
 	cmp     #$10
 	jcs     L0024
 ;
@@ -824,10 +826,10 @@ L019F:	sta     (sp),y
 	ldx     sp+1
 	clc
 	adc     #$11
-	bcc     L01A5
+	bcc     L01B4
 	inx
 	clc
-L01A5:	adc     (sp),y
+L01B4:	adc     (sp),y
 	bcc     L002E
 	inx
 L002E:	jsr     pushax
@@ -842,10 +844,10 @@ L002E:	jsr     pushax
 	ldy     #$02
 	lda     (sp),y
 	asl     a
-	bcc     L01A0
+	bcc     L01AF
 	inx
 	clc
-L01A0:	adc     ptr1
+L01AF:	adc     ptr1
 	pha
 	txa
 	adc     ptr1+1
@@ -883,9 +885,9 @@ L0035:	jsr     pushax
 	clc
 	adc     ptr1
 	ldx     ptr1+1
-	bcc     L019E
+	bcc     L01AD
 	inx
-L019E:	jsr     pushax
+L01AD:	jsr     pushax
 	lda     #$3F
 	jsr     tosumoda0
 	ldy     #$00
@@ -897,13 +899,13 @@ L019E:	jsr     pushax
 	clc
 	lda     #$01
 	adc     (sp),y
-	jmp     L019F
+	jmp     L01AE
 ;
 ; if (paletteType == PALETTE_TYPE_BG)
 ;
 L0024:	ldy     #$21
 	lda     (sp),y
-	bne     L01A3
+	bne     L01B2
 ;
 ; pal_bg(bgPalette);
 ;
@@ -918,12 +920,12 @@ L003D:	jsr     _pal_bg
 ; else if (paletteType == PALETTE_TYPE_SPR)
 ;
 	jmp     L0044
-L01A3:	lda     (sp),y
+L01B2:	lda     (sp),y
 	cmp     #$01
 ;
 ; else
 ;
-	beq     L01AA
+	beq     L01B9
 ;
 ; pal_bg(bgPalette);
 ;
@@ -937,7 +939,7 @@ L0047:	jsr     _pal_bg
 ;
 ; pal_spr(sprPalette);
 ;
-L01AA:	lda     sp
+L01B9:	lda     sp
 	ldx     sp+1
 	clc
 	adc     #$01
@@ -1149,10 +1151,10 @@ L0078:	inx
 	ldx     #$00
 	clc
 	adc     #$04
-	bcc     L01AB
+	bcc     L01BA
 	inx
 	clc
-L01AB:	adc     _xText
+L01BA:	adc     _xText
 	sta     _xText
 	txa
 	adc     _xText+1
@@ -1246,9 +1248,9 @@ L006E:	ldy     #$22
 	clc
 	adc     ptr1
 	ldx     ptr1+1
-	bcc     L01AC
+	bcc     L01BB
 	inx
-L01AC:	jsr     _vram_adr
+L01BB:	jsr     _vram_adr
 ;
 ; while (rda = *s++)
 ;
@@ -1400,37 +1402,56 @@ L0151:	jmp     incsp4
 ;
 ; else put_str(NTADR_A(2, 5), "PAL");
 ;
-	jmp     L01AD
+	jmp     L01BC
 L016A:	ldx     #$20
 	lda     #$A2
 	jsr     pushax
 	lda     #<(L017D)
 	ldx     #>(L017D)
-L01AD:	jsr     _put_str
+L01BC:	jsr     _put_str
 ;
 ; ppu_on_all(); // turn on screen
 ;
-	jsr     _ppu_on_all
+L01BD:	jsr     _ppu_on_all
+;
+; ppu_off(); // screen off
+;
+	jsr     _ppu_off
 ;
 ; if (NES_PAD1(PAD_LEFT))
 ;
-L0180:	lda     #$00
-L01AE:	jsr     _pad_poll
+	lda     #$00
+	jsr     _pad_poll
 	and     #$02
-	beq     L01AE
+	beq     L01BE
 ;
-; put_str(NTADR_A(2, 4), "ya mama");
+; put_str(NTADR_A(2, 4), "ya mama left!");
 ;
 	ldx     #$20
 	lda     #$82
 	jsr     pushax
-	lda     #<(L018F)
-	ldx     #>(L018F)
+	lda     #<(L0190)
+	ldx     #>(L0190)
 	jsr     _put_str
+;
+; if (NES_PAD1(PAD_RIGHT))
+;
+	lda     #$00
+L01BE:	jsr     _pad_poll
+	and     #$01
+	beq     L01BD
+;
+; put_str(NTADR_A(2, 4), "ya mama right!");
+;
+	ldx     #$20
+	lda     #$82
+	jsr     pushax
+	lda     #<(L019D)
+	ldx     #>(L019D)
 ;
 ; while (1){
 ;
-	jmp     L0180
+	jmp     L01BC
 
 .endproc
 
