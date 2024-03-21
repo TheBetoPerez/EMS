@@ -6,9 +6,9 @@
 	Last Update 3/20/24 - comments, cleaning, from source code that was executed on the MiSTer on Tuesday, 3/19/24
 
 */
-#include "LIB/neslib.h"
-#include "LIB/nesdoug.h" 
-
+#include "new_lib/neslib.h"
+// #include "new_lib/nesdoug.h" 
+#include "new_lib/nesclib.h" 
 #define BLACK 0x0f
 #define DK_GY 0x00
 #define LT_GY 0x10
@@ -56,7 +56,7 @@ void main (void) {
 
 
 	put_str(NTADR_A(2, 2), "GO GATORS!");
-	put_str(NTADR_A(2, 4), "VIDEO MODE:");
+
 
 	if(ppu_system()) put_str(NTADR_A(2, 5), "NTSC");
 	else put_str(NTADR_A(2, 5), "PAL");
@@ -69,7 +69,14 @@ void main (void) {
 	
 	ppu_on_all(); //	turn on screen
 	// Infinite loop for now
-	while (1);
+	
+	while (1){
+			if (NES_PAD1(PAD_LEFT))
+    {
+	put_str(NTADR_A(2, 4), "ya mama");
+
+    }
+	}
 }
 	
 	
