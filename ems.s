@@ -12,18 +12,80 @@
 	.macpack	longbranch
 	.forceimport	__STARTUP__
 	.import		_pal_bg
-	.import		_pal_col
+	.import		_pal_spr
+	.import		_ppu_wait_nmi
 	.import		_ppu_off
 	.import		_ppu_on_all
 	.import		_ppu_system
+	.import		_oam_clear
+	.import		_oam_spr
+	.import		_pad_poll
+	.import		_rand8
 	.import		_vram_adr
 	.import		_vram_put
+	.import		_get_pad_new
+	.export		_p2
+	.export		_p2val
+	.export		_p2reg
+	.export		_pad1
+	.export		_pad1Next
+	.export		_palSprites
 	.export		_palette
+	.export		_i
+	.export		_j
+	.export		_spr
+	.export		_menuIndexH
+	.export		_menuIndexV
+	.export		_cursorX
+	.export		_cursorY
 	.export		_put_str
+	.export		_handleMenuInput
 	.export		_main
+
+.segment	"DATA"
+
+_p2:
+	.word	$400D
+_p2val:
+	.byte	$00
+_p2reg:
+	.byte	$00
+_pad1:
+	.byte	$00
+_pad1Next:
+	.byte	$00
+_j:
+	.byte	$00
+_spr:
+	.byte	$00
+_menuIndexH:
+	.byte	$00
+_menuIndexV:
+	.byte	$00
+_cursorX:
+	.byte	$00
+_cursorY:
+	.byte	$37
 
 .segment	"RODATA"
 
+_palSprites:
+	.byte	$0F
+	.byte	$15
+	.byte	$26
+	.byte	$11
+	.byte	$0F
+	.byte	$11
+	.byte	$21
+	.byte	$15
+	.byte	$0F
+	.byte	$15
+	.byte	$25
+	.byte	$19
+	.byte	$0F
+	.byte	$19
+	.byte	$29
+	.byte	$38
 _palette:
 	.byte	$0F
 	.byte	$00
@@ -41,14 +103,42 @@ _palette:
 	.byte	$00
 	.byte	$00
 	.byte	$00
+S0006:
+	.byte	$53,$55,$50,$45,$52,$20,$4D,$41,$52,$49,$4F,$20,$42,$52,$4F,$53
+	.byte	$00
+S000C:
+	.byte	$33,$20,$4D,$53,$42,$20,$4F,$46,$20,$34,$30,$31,$37,$3A,$00
+S000A:
+	.byte	$53,$55,$50,$45,$52,$20,$4D,$41,$52,$49,$4F,$20,$33,$00
+S0008:
+	.byte	$46,$49,$4E,$41,$4C,$20,$46,$41,$4E,$54,$41,$53,$59,$00
+S0009:
+	.byte	$4E,$49,$4E,$4A,$41,$20,$47,$41,$49,$44,$45,$4E,$00
 S0003:
 	.byte	$56,$49,$44,$45,$4F,$20,$4D,$4F,$44,$45,$3A,$00
+S0007:
+	.byte	$4D,$45,$47,$41,$20,$4D,$41,$4E,$20,$32,$00
 S0002:
 	.byte	$47,$4F,$20,$47,$41,$54,$4F,$52,$53,$21,$00
+S000B:
+	.byte	$54,$45,$54,$52,$49,$53,$00
 S0004:
 	.byte	$4E,$54,$53,$43,$00
 S0005:
 	.byte	$50,$41,$4C,$00
+
+.segment	"BSS"
+
+_ball_x:
+	.res	8,$00
+_ball_y:
+	.res	8,$00
+_ball_dx:
+	.res	8,$00
+_ball_dy:
+	.res	8,$00
+_i:
+	.res	1,$00
 
 ; ---------------------------------------------------------------
 ; void __near__ put_str (unsigned int adr, const char *str)
@@ -112,6 +202,141 @@ L0003:	jmp     incsp4
 .endproc
 
 ; ---------------------------------------------------------------
+; void __near__ handleMenuInput (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_handleMenuInput: near
+
+.segment	"CODE"
+
+;
+; if((pad1Next & PAD_UP) && menuIndexV){ 
+;
+	lda     _pad1Next
+	and     #$08
+	beq     L0015
+	lda     _menuIndexV
+	beq     L0015
+;
+; cursorY -= 16;
+;
+	lda     _cursorY
+	sec
+	sbc     #$10
+	sta     _cursorY
+;
+; --menuIndexV;
+;
+	dec     _menuIndexV
+;
+; *p2 = 0x0E;
+;
+	lda     _p2+1
+	sta     ptr1+1
+	lda     _p2
+	sta     ptr1
+	lda     #$0E
+	ldy     #$00
+	sta     (ptr1),y
+;
+; if((pad1Next & PAD_DOWN) && (menuIndexV < 3)){ 
+;
+L0015:	lda     _pad1Next
+	and     #$04
+	beq     L0019
+	lda     _menuIndexV
+	cmp     #$03
+	bcs     L0019
+;
+; cursorY += 16;
+;
+	lda     #$10
+	clc
+	adc     _cursorY
+	sta     _cursorY
+;
+; ++menuIndexV;
+;
+	inc     _menuIndexV
+;
+; *p2 = 0x01;
+;
+	lda     _p2+1
+	sta     ptr1+1
+	lda     _p2
+	sta     ptr1
+	lda     #$01
+	ldy     #$00
+	sta     (ptr1),y
+;
+; if((pad1Next & PAD_LEFT) && menuIndexH){
+;
+L0019:	lda     _pad1Next
+	and     #$02
+	beq     L001D
+	lda     _menuIndexH
+	beq     L001D
+;
+; cursorX -= 136;
+;
+	lda     _cursorX
+	sec
+	sbc     #$88
+	sta     _cursorX
+;
+; --menuIndexH;
+;
+	dec     _menuIndexH
+;
+; *p2 = 0x05;
+;
+	lda     _p2+1
+	sta     ptr1+1
+	lda     _p2
+	sta     ptr1
+	lda     #$05
+	ldy     #$00
+	sta     (ptr1),y
+;
+; if((pad1Next & PAD_RIGHT) && !menuIndexH){
+;
+L001D:	lda     _pad1Next
+	and     #$01
+	beq     L001F
+	lda     _menuIndexH
+	beq     L0020
+L001F:	rts
+;
+; cursorX += 136;
+;
+L0020:	lda     #$88
+	clc
+	adc     _cursorX
+	sta     _cursorX
+;
+; ++menuIndexH;
+;
+	inc     _menuIndexH
+;
+; *p2 = 0x09;
+;
+	lda     _p2+1
+	sta     ptr1+1
+	lda     _p2
+	sta     ptr1
+	lda     #$09
+	ldy     #$00
+	sta     (ptr1),y
+;
+; }
+;
+	rts
+
+.endproc
+
+; ---------------------------------------------------------------
 ; void __near__ main (void)
 ; ---------------------------------------------------------------
 
@@ -126,65 +351,454 @@ L0003:	jmp     incsp4
 ;
 	jsr     _ppu_off
 ;
+; pal_spr(palSprites);
+;
+	lda     #<(_palSprites)
+	ldx     #>(_palSprites)
+	jsr     _pal_spr
+;
+; for(i = 0;i < BALLS_MAX; ++i){
+;
+	lda     #$00
+	sta     _i
+L002F:	lda     _i
+	cmp     #$08
+	jcs     L0003
+;
+; ball_x[i] = rand8();
+;
+	lda     #<(_ball_x)
+	ldx     #>(_ball_x)
+	clc
+	adc     _i
+	bcc     L0006
+	inx
+L0006:	jsr     pushax
+	jsr     _rand8
+	ldy     #$00
+	jsr     staspidx
+;
+; ball_y[i] = rand8();
+;
+	lda     #<(_ball_y)
+	ldx     #>(_ball_y)
+	clc
+	adc     _i
+	bcc     L0007
+	inx
+L0007:	jsr     pushax
+	jsr     _rand8
+	ldy     #$00
+	jsr     staspidx
+;
+; j = rand8();
+;
+	jsr     _rand8
+	sta     _j
+;
+; spr = 1 + (rand8() % 3);
+;
+	jsr     _rand8
+	jsr     pushax
+	lda     #$03
+	jsr     tosumoda0
+	clc
+	adc     #$01
+	sta     _spr
+;
+; ball_dx[i] = j & 1? -spr:spr;
+;
+	lda     #<(_ball_dx)
+	ldx     #>(_ball_dx)
+	clc
+	adc     _i
+	bcc     L0009
+	inx
+L0009:	sta     ptr1
+	stx     ptr1+1
+	lda     _j
+	and     #$01
+	beq     L0030
+	lda     _spr
+	eor     #$FF
+	clc
+	adc     #$01
+	jmp     L0031
+L0030:	lda     _spr
+L0031:	ldy     #$00
+	sta     (ptr1),y
+;
+; spr = 1 + (rand8() % 3);
+;
+	jsr     _rand8
+	jsr     pushax
+	lda     #$03
+	jsr     tosumoda0
+	clc
+	adc     #$01
+	sta     _spr
+;
+; ball_dy[i] = j & 1? -spr:spr;
+;
+	lda     #<(_ball_dy)
+	ldx     #>(_ball_dy)
+	clc
+	adc     _i
+	bcc     L000D
+	inx
+L000D:	sta     ptr1
+	stx     ptr1+1
+	lda     _j
+	and     #$01
+	beq     L0032
+	lda     _spr
+	eor     #$FF
+	clc
+	adc     #$01
+	jmp     L0033
+L0032:	lda     _spr
+L0033:	ldy     #$00
+	sta     (ptr1),y
+;
+; for(i = 0;i < BALLS_MAX; ++i){
+;
+	inc     _i
+	jmp     L002F
+;
 ; pal_bg(palette); // load the BG palette
 ;
-	lda     #<(_palette)
+L0003:	lda     #<(_palette)
 	ldx     #>(_palette)
 	jsr     _pal_bg
 ;
-; pal_col(1, 0x30);
+; pal_spr(palSprites);
 ;
-	lda     #$01
-	jsr     pusha
-	lda     #$30
-	jsr     _pal_col
+	lda     #<(_palSprites)
+	ldx     #>(_palSprites)
+	jsr     _pal_spr
 ;
-; put_str(NTADR_A(2, 2), "GO GATORS!");
+; put_str(NTADR_A(1, 2), "GO GATORS!");
 ;
 	ldx     #$20
-	lda     #$42
+	lda     #$41
 	jsr     pushax
 	lda     #<(S0002)
 	ldx     #>(S0002)
 	jsr     _put_str
 ;
-; put_str(NTADR_A(2, 4), "VIDEO MODE:");
+; put_str(NTADR_A(1, 4), "VIDEO MODE:");
 ;
 	ldx     #$20
-	lda     #$82
+	lda     #$81
 	jsr     pushax
 	lda     #<(S0003)
 	ldx     #>(S0003)
 	jsr     _put_str
 ;
-; if(ppu_system()) put_str(NTADR_A(2, 5), "NTSC");
+; if(ppu_system()) put_str(NTADR_A(1, 5), "NTSC");
 ;
 	jsr     _ppu_system
 	tax
-	beq     L0002
+	beq     L0010
 	ldx     #$20
-	lda     #$A2
+	lda     #$A1
 	jsr     pushax
 	lda     #<(S0004)
 	ldx     #>(S0004)
 ;
-; else put_str(NTADR_A(2, 5), "PAL");
+; else put_str(NTADR_A(1, 5), "PAL");
 ;
-	jmp     L0008
-L0002:	ldx     #$20
-	lda     #$A2
+	jmp     L002D
+L0010:	ldx     #$20
+	lda     #$A1
 	jsr     pushax
 	lda     #<(S0005)
 	ldx     #>(S0005)
-L0008:	jsr     _put_str
+L002D:	jsr     _put_str
 ;
-; ppu_on_all(); // turn on screen
+; put_str(NTADR_A(1, 7), "SUPER MARIO BROS");
+;
+	ldx     #$20
+	lda     #$E1
+	jsr     pushax
+	lda     #<(S0006)
+	ldx     #>(S0006)
+	jsr     _put_str
+;
+; put_str(NTADR_A(1, 9), "MEGA MAN 2");
+;
+	ldx     #$21
+	txa
+	jsr     pushax
+	lda     #<(S0007)
+	ldx     #>(S0007)
+	jsr     _put_str
+;
+; put_str(NTADR_A(1, 11), "FINAL FANTASY");
+;
+	ldx     #$21
+	lda     #$61
+	jsr     pushax
+	lda     #<(S0008)
+	ldx     #>(S0008)
+	jsr     _put_str
+;
+; put_str(NTADR_A(1, 13), "NINJA GAIDEN");
+;
+	ldx     #$21
+	lda     #$A1
+	jsr     pushax
+	lda     #<(S0009)
+	ldx     #>(S0009)
+	jsr     _put_str
+;
+; put_str(NTADR_A(18, 7), "SUPER MARIO 3");
+;
+	ldx     #$20
+	lda     #$F2
+	jsr     pushax
+	lda     #<(S000A)
+	ldx     #>(S000A)
+	jsr     _put_str
+;
+; put_str(NTADR_A(18, 9), "TETRIS");
+;
+	ldx     #$21
+	lda     #$32
+	jsr     pushax
+	lda     #<(S000B)
+	ldx     #>(S000B)
+	jsr     _put_str
+;
+; put_str(NTADR_A(1, 16), "3 MSB OF 4017:");
+;
+	ldx     #$22
+	lda     #$01
+	jsr     pushax
+	lda     #<(S000C)
+	ldx     #>(S000C)
+	jsr     _put_str
+;
+; ppu_on_all();
 ;
 	jsr     _ppu_on_all
 ;
-; while (1);
+; ppu_wait_nmi();
 ;
-L0007:	jmp     L0007
+L0012:	jsr     _ppu_wait_nmi
+;
+; oam_clear();
+;
+	jsr     _oam_clear
+;
+; spr = 0;
+;
+	lda     #$00
+	sta     _spr
+;
+; for(i = 0; i < BALLS_MAX; ++i){
+;
+	sta     _i
+L0034:	lda     _i
+	cmp     #$08
+	jcs     L0016
+;
+; if(i % 2) oam_spr(ball_x[i], ball_y[i], 0x55, i % 4);
+;
+	and     #$01
+	beq     L0019
+	jsr     decsp3
+	ldy     _i
+	lda     _ball_x,y
+	ldy     #$02
+	sta     (sp),y
+	ldy     _i
+	lda     _ball_y,y
+	ldy     #$01
+	sta     (sp),y
+	lda     #$55
+;
+; else oam_spr(ball_x[i], ball_y[i], 0x46, i % 4);
+;
+	jmp     L0039
+L0019:	jsr     decsp3
+	ldy     _i
+	lda     _ball_x,y
+	ldy     #$02
+	sta     (sp),y
+	ldy     _i
+	lda     _ball_y,y
+	ldy     #$01
+	sta     (sp),y
+	lda     #$46
+L0039:	dey
+	sta     (sp),y
+	lda     _i
+	and     #$03
+	jsr     _oam_spr
+;
+; ball_x[i] += ball_dx[i];
+;
+	lda     #<(_ball_x)
+	ldx     #>(_ball_x)
+	clc
+	adc     _i
+	bcc     L001F
+	inx
+L001F:	sta     sreg
+	stx     sreg+1
+	sta     ptr1
+	stx     ptr1+1
+	ldy     #$00
+	lda     (ptr1),y
+	sta     ptr1
+	ldy     _i
+	lda     _ball_dx,y
+	clc
+	adc     ptr1
+	ldy     #$00
+	sta     (sreg),y
+;
+; ball_y[i] += ball_dy[i];
+;
+	lda     #<(_ball_y)
+	ldx     #>(_ball_y)
+	clc
+	adc     _i
+	bcc     L0021
+	inx
+L0021:	sta     sreg
+	stx     sreg+1
+	sta     ptr1
+	stx     ptr1+1
+	lda     (ptr1),y
+	sta     ptr1
+	ldy     _i
+	lda     _ball_dy,y
+	clc
+	adc     ptr1
+	ldy     #$00
+	sta     (sreg),y
+;
+; if(ball_x[i]>=(256-8)) ball_dx[i]=-ball_dx[i];
+;
+	ldy     _i
+	lda     _ball_x,y
+	cmp     #$F8
+	bcc     L0023
+	lda     #<(_ball_dx)
+	ldx     #>(_ball_dx)
+	clc
+	adc     _i
+	bcc     L0025
+	inx
+L0025:	sta     ptr1
+	stx     ptr1+1
+	ldy     _i
+	lda     _ball_dx,y
+	eor     #$FF
+	clc
+	adc     #$01
+	ldy     #$00
+	sta     (ptr1),y
+;
+; if(ball_y[i]>=(240-8)) ball_dy[i]=-ball_dy[i];
+;
+L0023:	ldy     _i
+	lda     _ball_y,y
+	cmp     #$E8
+	bcc     L0035
+	lda     #<(_ball_dy)
+	ldx     #>(_ball_dy)
+	clc
+	adc     _i
+	bcc     L0029
+	inx
+L0029:	sta     ptr1
+	stx     ptr1+1
+	ldy     _i
+	lda     _ball_dy,y
+	eor     #$FF
+	clc
+	adc     #$01
+	ldy     #$00
+	sta     (ptr1),y
+;
+; for(i = 0; i < BALLS_MAX; ++i){
+;
+L0035:	inc     _i
+	jmp     L0034
+;
+; oam_spr(cursorX, cursorY, 0x7F, 0x00);
+;
+L0016:	jsr     decsp3
+	lda     _cursorX
+	ldy     #$02
+	sta     (sp),y
+	lda     _cursorY
+	dey
+	sta     (sp),y
+	lda     #$7F
+	dey
+	sta     (sp),y
+	tya
+	jsr     _oam_spr
+;
+; pad1 = pad_poll(0);
+;
+	lda     #$00
+	jsr     _pad_poll
+	sta     _pad1
+;
+; pad1Next = get_pad_new(0);
+;
+	lda     #$00
+	jsr     _get_pad_new
+	sta     _pad1Next
+;
+; handleMenuInput();
+;
+	jsr     _handleMenuInput
+;
+; p2val = *p2;
+;
+	lda     _p2+1
+	sta     ptr1+1
+	lda     _p2
+	sta     ptr1
+	ldy     #$00
+	lda     (ptr1),y
+	sta     _p2val
+;
+; p2val &= 0x0F;
+;
+	and     #$0F
+	sta     _p2val
+;
+; p2val += 0x30;
+;
+	lda     #$30
+	clc
+	adc     _p2val
+	sta     _p2val
+;
+; oam_spr(0x80, 0x80, p2val, 0x0);
+;
+	jsr     decsp3
+	lda     #$80
+	ldy     #$02
+	sta     (sp),y
+	dey
+	sta     (sp),y
+	lda     _p2val
+	dey
+	sta     (sp),y
+	tya
+	jsr     _oam_spr
+;
+; while (1){
+;
+	jmp     L0012
 
 .endproc
 
