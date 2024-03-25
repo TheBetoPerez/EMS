@@ -26,7 +26,8 @@
 	.import		_get_pad_new
 	.export		_p2
 	.export		_p2val
-	.export		_p2reg
+	.export		_p2low
+	.export		_p2high
 	.export		_pad1
 	.export		_pad1Next
 	.export		_palSprites
@@ -44,11 +45,11 @@
 
 .segment	"DATA"
 
-_p2:
-	.word	$400D
 _p2val:
 	.byte	$00
-_p2reg:
+_p2low:
+	.byte	$00
+_p2high:
 	.byte	$00
 _pad1:
 	.byte	$00
@@ -107,7 +108,7 @@ S0006:
 	.byte	$53,$55,$50,$45,$52,$20,$4D,$41,$52,$49,$4F,$20,$42,$52,$4F,$53
 	.byte	$00
 S000C:
-	.byte	$33,$20,$4D,$53,$42,$20,$4F,$46,$20,$34,$30,$31,$37,$3A,$00
+	.byte	$33,$20,$4D,$53,$42,$20,$4F,$46,$20,$34,$30,$30,$44,$3A,$00
 S000A:
 	.byte	$53,$55,$50,$45,$52,$20,$4D,$41,$52,$49,$4F,$20,$33,$00
 S0008:
@@ -129,6 +130,8 @@ S0005:
 
 .segment	"BSS"
 
+_p2:
+	.res	2,$00
 _ball_x:
 	.res	8,$00
 _ball_y:
@@ -231,13 +234,13 @@ L0003:	jmp     incsp4
 ;
 	dec     _menuIndexV
 ;
-; *p2 = 0x0E;
+; *p2 = 0xAE;
 ;
 	lda     _p2+1
 	sta     ptr1+1
 	lda     _p2
 	sta     ptr1
-	lda     #$0E
+	lda     #$AE
 	ldy     #$00
 	sta     (ptr1),y
 ;
@@ -261,13 +264,13 @@ L0015:	lda     _pad1Next
 ;
 	inc     _menuIndexV
 ;
-; *p2 = 0x01;
+; *p2 = 0xB1;
 ;
 	lda     _p2+1
 	sta     ptr1+1
 	lda     _p2
 	sta     ptr1
-	lda     #$01
+	lda     #$B1
 	ldy     #$00
 	sta     (ptr1),y
 ;
@@ -290,13 +293,13 @@ L0019:	lda     _pad1Next
 ;
 	dec     _menuIndexH
 ;
-; *p2 = 0x05;
+; *p2 = 0x25;
 ;
 	lda     _p2+1
 	sta     ptr1+1
 	lda     _p2
 	sta     ptr1
-	lda     #$05
+	lda     #$25
 	ldy     #$00
 	sta     (ptr1),y
 ;
@@ -320,13 +323,13 @@ L0020:	lda     #$88
 ;
 	inc     _menuIndexH
 ;
-; *p2 = 0x09;
+; *p2 = 0x49;
 ;
 	lda     _p2+1
 	sta     ptr1+1
 	lda     _p2
 	sta     ptr1
-	lda     #$09
+	lda     #$49
 	ldy     #$00
 	sta     (ptr1),y
 ;
@@ -350,6 +353,16 @@ L0020:	lda     #$88
 ; ppu_off(); // screen off
 ;
 	jsr     _ppu_off
+;
+; *p2 = 0xEF;
+;
+	lda     _p2+1
+	sta     ptr1+1
+	lda     _p2
+	sta     ptr1
+	lda     #$EF
+	ldy     #$00
+	sta     (ptr1),y
 ;
 ; pal_spr(palSprites);
 ;
@@ -570,7 +583,7 @@ L002D:	jsr     _put_str
 	ldx     #>(S000B)
 	jsr     _put_str
 ;
-; put_str(NTADR_A(1, 16), "3 MSB OF 4017:");
+; put_str(NTADR_A(1, 16), "3 MSB OF 400D:");
 ;
 	ldx     #$22
 	lda     #$01
@@ -770,19 +783,55 @@ L0016:	jsr     decsp3
 	lda     (ptr1),y
 	sta     _p2val
 ;
-; p2val &= 0x0F;
+; p2low = p2val & 0x0F;
 ;
 	and     #$0F
-	sta     _p2val
+	sta     _p2low
 ;
-; p2val += 0x30;
+; p2low += 0x30;
 ;
 	lda     #$30
 	clc
-	adc     _p2val
-	sta     _p2val
+	adc     _p2low
+	sta     _p2low
 ;
-; oam_spr(0x80, 0x80, p2val, 0x0);
+; p2high = p2val & 0xF0;
+;
+	lda     _p2val
+	and     #$F0
+	sta     _p2high
+;
+; p2high = p2high >> 4;
+;
+	lsr     a
+	lsr     a
+	lsr     a
+	lsr     a
+	sta     _p2high
+;
+; p2high += 0x30;
+;
+	lda     #$30
+	clc
+	adc     _p2high
+	sta     _p2high
+;
+; oam_spr(0x88, 0x80, p2low, 0x0);
+;
+	jsr     decsp3
+	lda     #$88
+	ldy     #$02
+	sta     (sp),y
+	lda     #$80
+	dey
+	sta     (sp),y
+	lda     _p2low
+	dey
+	sta     (sp),y
+	tya
+	jsr     _oam_spr
+;
+; oam_spr(0x80, 0x80, p2high, 0x0);
 ;
 	jsr     decsp3
 	lda     #$80
@@ -790,7 +839,7 @@ L0016:	jsr     decsp3
 	sta     (sp),y
 	dey
 	sta     (sp),y
-	lda     _p2val
+	lda     _p2high
 	dey
 	sta     (sp),y
 	tya

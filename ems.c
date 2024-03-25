@@ -10,9 +10,11 @@
 #include "LIB/nesdoug.h" 
 
 // P2 register data
-unsigned char* p2 = (unsigned char*)0x400D;
+unsigned char* p2;
+
 unsigned char p2val = 0x00;
-unsigned char p2reg = 0x00;
+unsigned char p2low = 0x00;
+unsigned char p2high = 0x00;
 
 
 #define BLACK 0x0f
@@ -96,7 +98,7 @@ void handleMenuInput(void){
 	if((pad1Next & PAD_UP) && menuIndexV){ 
 		cursorY -= 16;
 		--menuIndexV;
-		*p2 = 0x0E;
+		*p2 = 0xAE;
 		
 	}
 
@@ -105,7 +107,7 @@ void handleMenuInput(void){
 	if((pad1Next & PAD_DOWN) && (menuIndexV < 3)){ 
 		cursorY += 16;
 		++menuIndexV;
-		*p2 = 0x01;
+		*p2 = 0xB1;
 		
 	}
 
@@ -114,7 +116,7 @@ void handleMenuInput(void){
 	if((pad1Next & PAD_LEFT) && menuIndexH){
 		cursorX -= 136;
 		--menuIndexH;
-		*p2 = 0x05;
+		*p2 = 0x25;
 		
 	}
 
@@ -122,17 +124,17 @@ void handleMenuInput(void){
 	if((pad1Next & PAD_RIGHT) && !menuIndexH){
 		cursorX += 136;
 		++menuIndexH;
-		*p2 = 0x09;
+		*p2 = 0x49;
 		
 	}
 
 }
 
 
-
 void main (void) {
 	
 	ppu_off(); // screen off
+	*p2 = 0xEF;
 
 	pal_spr(palSprites);
 	
@@ -171,7 +173,7 @@ void main (void) {
 
 		put_str(NTADR_A(18, 7), "SUPER MARIO 3");
 		put_str(NTADR_A(18, 9), "TETRIS");
-		put_str(NTADR_A(1, 16), "3 MSB OF 4017:");
+		put_str(NTADR_A(1, 16), "3 MSB OF 400D:");
 
 		ppu_on_all();
 
@@ -207,9 +209,13 @@ void main (void) {
 
 		//Player 2 register logic
 		p2val = *p2;
-		p2val &= 0x0F;
-		p2val += 0x30;
-		oam_spr(0x80, 0x80, p2val, 0x0);
+		p2low = p2val & 0x0F;
+		p2low += 0x30;
+		p2high = p2val & 0xF0;
+		p2high = p2high >> 4;
+		p2high += 0x30;
+		oam_spr(0x88, 0x80, p2low, 0x0);
+		oam_spr(0x80, 0x80, p2high, 0x0);
 
 	}
 }
