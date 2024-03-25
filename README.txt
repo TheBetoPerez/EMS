@@ -6,7 +6,3 @@ EMS.C has been updated with better comments
 1. Do all of this on WSL
 2. Makesure you have CC65 installed.
 3. Run make
-
-
-Emulator
-https://fceux.com/web/download.html
