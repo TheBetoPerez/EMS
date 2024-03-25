@@ -8,9 +8,12 @@
 */
 #include "LIB/neslib.h"
 #include "LIB/nesdoug.h" 
+#include <stdio.h>
 
 // P2 register data
-unsigned char* p2 = (unsigned char*)0x400D;
+unsigned char* p2;
+
+
 unsigned char p2val = 0x00;
 unsigned char p2reg = 0x00;
 
@@ -24,6 +27,7 @@ unsigned char p2reg = 0x00;
 unsigned char pad1 = 0;
 unsigned char pad1Next = 0;
 
+unsigned int test_ctr = 0;
 
 // there's some oddities in the palette code, black must be 0x0f, white must be 0x30
 
@@ -64,9 +68,9 @@ unsigned char menuIndexV = 0;
 unsigned char cursorX = 0;
 unsigned char cursorY = 55;
 
+// unsigned char rom_addresses[8] = {0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF};
+unsigned char rom_addresses[8] = {0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8};
 
- 
- 
 #pragma bss-name(push, "ZEROPAGE")
 
 // GLOBAL VARIABLES
@@ -96,7 +100,6 @@ void handleMenuInput(void){
 	if((pad1Next & PAD_UP) && menuIndexV){ 
 		cursorY -= 16;
 		--menuIndexV;
-		*p2 = 0x0E;
 		
 	}
 
@@ -105,7 +108,6 @@ void handleMenuInput(void){
 	if((pad1Next & PAD_DOWN) && (menuIndexV < 3)){ 
 		cursorY += 16;
 		++menuIndexV;
-		*p2 = 0x01;
 		
 	}
 
@@ -114,15 +116,12 @@ void handleMenuInput(void){
 	if((pad1Next & PAD_LEFT) && menuIndexH){
 		cursorX -= 136;
 		--menuIndexH;
-		*p2 = 0x05;
-		
 	}
 
 	// Right
 	if((pad1Next & PAD_RIGHT) && !menuIndexH){
 		cursorX += 136;
 		++menuIndexH;
-		*p2 = 0x09;
 		
 	}
 
@@ -131,6 +130,8 @@ void handleMenuInput(void){
 
 
 void main (void) {
+	unsigned char rom_index = 0;
+
 	
 	ppu_off(); // screen off
 
@@ -206,7 +207,14 @@ void main (void) {
 		handleMenuInput();
 
 		//Player 2 register logic
+		// p2val = *p2;
+		rom_index = (unsigned char)((menuIndexH * 4) + menuIndexV);
+
+		p2val = rom_addresses[rom_index];
+
+		*p2 = p2val;
 		p2val = *p2;
+		
 		p2val &= 0x0F;
 		p2val += 0x30;
 		oam_spr(0x80, 0x80, p2val, 0x0);
