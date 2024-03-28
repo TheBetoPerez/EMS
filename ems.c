@@ -16,15 +16,18 @@ unsigned char p2val = 0x00;
 unsigned char p2low = 0x00;
 unsigned char p2high = 0x00;
 
-
+// BG Palette
 #define BLACK 0x0f
 #define DK_GY 0x00
 #define LT_GY 0x10
 #define WHITE 0x30
 
-
+// Player 1 input
 unsigned char pad1 = 0;
 unsigned char pad1Next = 0;
+
+#define MENU_SIZE 127
+#define ENTRY_SIZE 16
 
 
 // there's some oddities in the palette code, black must be 0x0f, white must be 0x30
@@ -38,13 +41,13 @@ const unsigned char palSprites[16] = {
 
 };
 
-
 const unsigned char palette[]={
 BLACK, DK_GY, LT_GY, WHITE,
 0,0,0,0,
 0,0,0,0,
 0,0,0,0
 }; 
+
 
 
 #define BALLS_MAX	8
@@ -59,16 +62,29 @@ static unsigned char ball_dy[BALLS_MAX];
 unsigned char i, j = 0;
 unsigned char spr = 0;
 
+// Menu location tracking
 unsigned char menuIndexH = 0;
 unsigned char menuIndexV = 0;
+
+unsigned char page = 0;
+
+// Menu entries
+
+unsigned char menu[32][ENTRY_SIZE] = {
+
+	"S. MARIO BROS",	"S. MARIO BROS 2",	"S. MARIO BROS 3",	"DONKEY KONG",	"DONKEY KONG 2",	"MEGA MAN",			"MEGA MAN 2",		"MEGA MAN 3",
+	"MEGA MAN 4", 		"MEGA MAN 5", 		"MEGA MAN 6", 		"L. OF ZELDA", 	"L. OF ZELDA 2", 	"MT'S PUNCH OUT", 	"CASTLEVANIA", 		"CASTLEVANIA 2",
+	"CASTLEVANIA 3",	"METROID",			"FINAL FANTASY",	"KID ICARUS",	"BATTLETOADS",		"TETRIS",			"GHOSTS & GBLNS", 	"ICE CLIMBER",
+	"MARIO BROS",		"TNMT",				"DUCK HUNT",		"CONTRA",		"CHIP N DALE",		"DR MARIO",			"KIRBY'S ADV"		
+
+};
+
 
 // Cursor data
 unsigned char cursorX = 0;
 unsigned char cursorY = 55;
 
 
- 
- 
 #pragma bss-name(push, "ZEROPAGE")
 
 // GLOBAL VARIABLES
@@ -90,6 +106,19 @@ void put_str(unsigned int adr, const char* str){
 	}
 }
 
+// Draw the menu entries. Can only be done when the screen is off
+void draw_bg_menu(const unsigned char page){
+	clear_vram_buffer();
+	ppu_off();
+	for(i = 0; i < 4; ++i){
+		
+		put_str(NTADR_A(1, i * 2 + 7), menu[(page * 8) + (i * 2)]);
+		put_str(NTADR_A(17, i *2 + 7), menu[(page * 8) + (i * 2) + 1]);
+
+	}
+	ppu_on_all();	
+}
+
 // Another function, handles input and logic
 
 void handleMenuInput(void){
@@ -102,7 +131,6 @@ void handleMenuInput(void){
 		
 	}
 
-
 	// Down the menu, only move down if we are not at the bottom of the menu
 	if((pad1Next & PAD_DOWN) && (menuIndexV < 3)){ 
 		cursorY += 16;
@@ -114,7 +142,7 @@ void handleMenuInput(void){
 	// Left, same conditions horizontally
 
 	if((pad1Next & PAD_LEFT) && menuIndexH){
-		cursorX -= 136;
+		cursorX -= 128;
 		--menuIndexH;
 		*p2 = 0x25;
 		
@@ -128,6 +156,21 @@ void handleMenuInput(void){
 		
 	}
 
+	// A or right page flip
+	if((pad1Next & PAD_A)){
+
+		if(page == 2) page = 0;
+		else ++page;
+		draw_bg_menu(page);
+	}
+
+	if((pad1Next & PAD_B)){
+
+		if(!page) page = 2;
+		else --page;
+		draw_bg_menu(page);
+	}
+
 }
 
 
@@ -138,7 +181,6 @@ void main (void) {
 
 	pal_spr(palSprites);
 	
-
 	for(i = 0;i < BALLS_MAX; ++i){
 
 		ball_x[i] = rand8();
@@ -166,25 +208,17 @@ void main (void) {
 		if(ppu_system()) put_str(NTADR_A(1, 5), "NTSC");
 		else put_str(NTADR_A(1, 5), "PAL");
 
-		put_str(NTADR_A(1, 7), "SUPER MARIO BROS");
-		put_str(NTADR_A(1, 9), "MEGA MAN 2");
-		put_str(NTADR_A(1, 11), "FINAL FANTASY");
-		put_str(NTADR_A(1, 13), "NINJA GAIDEN");
-
-		put_str(NTADR_A(18, 7), "SUPER MARIO 3");
-		put_str(NTADR_A(18, 9), "TETRIS");
-		put_str(NTADR_A(1, 16), "3 MSB OF 400D:");
 
 		ppu_on_all();
 
-	
-	//ppu_on_all(); //	turn on screen
+
 	// Infinite loop for now
 	while (1){
-
-
+		// Wait for the next frame to be ready
+		
 		ppu_wait_nmi();
 		oam_clear();
+		
 
 		spr = 0;
 
@@ -208,12 +242,13 @@ void main (void) {
 		handleMenuInput();
 
 		//Player 2 register logic
-		p2val = *p2;
+		p2val = menuIndexH + menuIndexV * 2;
 		p2low = p2val & 0x0F;
 		p2low += 0x30;
 		p2high = p2val & 0xF0;
 		p2high = p2high >> 4;
 		p2high += 0x30;
+
 		oam_spr(0x88, 0x80, p2low, 0x0);
 		oam_spr(0x80, 0x80, p2high, 0x0);
 

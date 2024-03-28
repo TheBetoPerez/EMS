@@ -23,6 +23,7 @@
 	.import		_rand8
 	.import		_vram_adr
 	.import		_vram_put
+	.import		_clear_vram_buffer
 	.import		_get_pad_new
 	.export		_p2
 	.export		_p2val
@@ -37,9 +38,12 @@
 	.export		_spr
 	.export		_menuIndexH
 	.export		_menuIndexV
+	.export		_page
+	.export		_menu
 	.export		_cursorX
 	.export		_cursorY
 	.export		_put_str
+	.export		_draw_bg_menu
 	.export		_handleMenuInput
 	.export		_main
 
@@ -63,6 +67,70 @@ _menuIndexH:
 	.byte	$00
 _menuIndexV:
 	.byte	$00
+_page:
+	.byte	$00
+_menu:
+	.byte	$53,$2E,$20,$4D,$41,$52,$49,$4F,$20,$42,$52,$4F,$53,$00
+	.res	2,$00
+	.byte	$53,$2E,$20,$4D,$41,$52,$49,$4F,$20,$42,$52,$4F,$53,$20,$32,$00
+	.byte	$53,$2E,$20,$4D,$41,$52,$49,$4F,$20,$42,$52,$4F,$53,$20,$33,$00
+	.byte	$44,$4F,$4E,$4B,$45,$59,$20,$4B,$4F,$4E,$47,$00
+	.res	4,$00
+	.byte	$44,$4F,$4E,$4B,$45,$59,$20,$4B,$4F,$4E,$47,$20,$32,$00
+	.res	2,$00
+	.byte	$4D,$45,$47,$41,$20,$4D,$41,$4E,$00
+	.res	7,$00
+	.byte	$4D,$45,$47,$41,$20,$4D,$41,$4E,$20,$32,$00
+	.res	5,$00
+	.byte	$4D,$45,$47,$41,$20,$4D,$41,$4E,$20,$33,$00
+	.res	5,$00
+	.byte	$4D,$45,$47,$41,$20,$4D,$41,$4E,$20,$34,$00
+	.res	5,$00
+	.byte	$4D,$45,$47,$41,$20,$4D,$41,$4E,$20,$35,$00
+	.res	5,$00
+	.byte	$4D,$45,$47,$41,$20,$4D,$41,$4E,$20,$36,$00
+	.res	5,$00
+	.byte	$4C,$2E,$20,$4F,$46,$20,$5A,$45,$4C,$44,$41,$00
+	.res	4,$00
+	.byte	$4C,$2E,$20,$4F,$46,$20,$5A,$45,$4C,$44,$41,$20,$32,$00
+	.res	2,$00
+	.byte	$4D,$54,$27,$53,$20,$50,$55,$4E,$43,$48,$20,$4F,$55,$54,$00
+	.res	1,$00
+	.byte	$43,$41,$53,$54,$4C,$45,$56,$41,$4E,$49,$41,$00
+	.res	4,$00
+	.byte	$43,$41,$53,$54,$4C,$45,$56,$41,$4E,$49,$41,$20,$32,$00
+	.res	2,$00
+	.byte	$43,$41,$53,$54,$4C,$45,$56,$41,$4E,$49,$41,$20,$33,$00
+	.res	2,$00
+	.byte	$4D,$45,$54,$52,$4F,$49,$44,$00
+	.res	8,$00
+	.byte	$46,$49,$4E,$41,$4C,$20,$46,$41,$4E,$54,$41,$53,$59,$00
+	.res	2,$00
+	.byte	$4B,$49,$44,$20,$49,$43,$41,$52,$55,$53,$00
+	.res	5,$00
+	.byte	$42,$41,$54,$54,$4C,$45,$54,$4F,$41,$44,$53,$00
+	.res	4,$00
+	.byte	$54,$45,$54,$52,$49,$53,$00
+	.res	9,$00
+	.byte	$47,$48,$4F,$53,$54,$53,$20,$26,$20,$47,$42,$4C,$4E,$53,$00
+	.res	1,$00
+	.byte	$49,$43,$45,$20,$43,$4C,$49,$4D,$42,$45,$52,$00
+	.res	4,$00
+	.byte	$4D,$41,$52,$49,$4F,$20,$42,$52,$4F,$53,$00
+	.res	5,$00
+	.byte	$54,$4E,$4D,$54,$00
+	.res	11,$00
+	.byte	$44,$55,$43,$4B,$20,$48,$55,$4E,$54,$00
+	.res	6,$00
+	.byte	$43,$4F,$4E,$54,$52,$41,$00
+	.res	9,$00
+	.byte	$43,$48,$49,$50,$20,$4E,$20,$44,$41,$4C,$45,$00
+	.res	4,$00
+	.byte	$44,$52,$20,$4D,$41,$52,$49,$4F,$00
+	.res	7,$00
+	.byte	$4B,$49,$52,$42,$59,$27,$53,$20,$41,$44,$56,$00
+	.res	4,$00
+	.res	16,$00
 _cursorX:
 	.byte	$00
 _cursorY:
@@ -104,28 +172,13 @@ _palette:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-S0006:
-	.byte	$53,$55,$50,$45,$52,$20,$4D,$41,$52,$49,$4F,$20,$42,$52,$4F,$53
-	.byte	$00
-S000C:
-	.byte	$33,$20,$4D,$53,$42,$20,$4F,$46,$20,$34,$30,$30,$44,$3A,$00
-S000A:
-	.byte	$53,$55,$50,$45,$52,$20,$4D,$41,$52,$49,$4F,$20,$33,$00
-S0008:
-	.byte	$46,$49,$4E,$41,$4C,$20,$46,$41,$4E,$54,$41,$53,$59,$00
-S0009:
-	.byte	$4E,$49,$4E,$4A,$41,$20,$47,$41,$49,$44,$45,$4E,$00
-S0003:
+S0022:
 	.byte	$56,$49,$44,$45,$4F,$20,$4D,$4F,$44,$45,$3A,$00
-S0007:
-	.byte	$4D,$45,$47,$41,$20,$4D,$41,$4E,$20,$32,$00
-S0002:
+S0021:
 	.byte	$47,$4F,$20,$47,$41,$54,$4F,$52,$53,$21,$00
-S000B:
-	.byte	$54,$45,$54,$52,$49,$53,$00
-S0004:
+S0023:
 	.byte	$4E,$54,$53,$43,$00
-S0005:
+S0024:
 	.byte	$50,$41,$4C,$00
 
 .segment	"BSS"
@@ -205,6 +258,156 @@ L0003:	jmp     incsp4
 .endproc
 
 ; ---------------------------------------------------------------
+; void __near__ draw_bg_menu (const unsigned char page)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_draw_bg_menu: near
+
+.segment	"CODE"
+
+;
+; void draw_bg_menu(const unsigned char page){
+;
+	jsr     pusha
+;
+; clear_vram_buffer();
+;
+	jsr     _clear_vram_buffer
+;
+; ppu_off();
+;
+	jsr     _ppu_off
+;
+; for(i = 0; i < 4; ++i){
+;
+	lda     #$00
+	sta     _i
+L0011:	lda     _i
+	cmp     #$04
+	jcs     L0003
+;
+; put_str(NTADR_A(1, i * 2 + 7), menu[(page * 8) + (i * 2)]);
+;
+	ldx     #$00
+	lda     _i
+	asl     a
+	bcc     L000D
+	inx
+	clc
+L000D:	adc     #$07
+	bcc     L0006
+	inx
+L0006:	jsr     aslax4
+	stx     tmp1
+	asl     a
+	rol     tmp1
+	ora     #$01
+	pha
+	lda     tmp1
+	ora     #$20
+	tax
+	pla
+	jsr     pushax
+	ldy     #$02
+	ldx     #$00
+	lda     (sp),y
+	jsr     shlax3
+	sta     ptr1
+	stx     ptr1+1
+	ldx     #$00
+	lda     _i
+	asl     a
+	bcc     L000E
+	inx
+	clc
+L000E:	adc     ptr1
+	pha
+	txa
+	adc     ptr1+1
+	tax
+	pla
+	jsr     aslax4
+	clc
+	adc     #<(_menu)
+	tay
+	txa
+	adc     #>(_menu)
+	tax
+	tya
+	jsr     _put_str
+;
+; put_str(NTADR_A(17, i *2 + 7), menu[(page * 8) + (i * 2) + 1]);
+;
+	ldx     #$00
+	lda     _i
+	asl     a
+	bcc     L000F
+	inx
+	clc
+L000F:	adc     #$07
+	bcc     L0007
+	inx
+L0007:	jsr     aslax4
+	stx     tmp1
+	asl     a
+	rol     tmp1
+	ora     #$11
+	pha
+	lda     tmp1
+	ora     #$20
+	tax
+	pla
+	jsr     pushax
+	ldy     #$02
+	ldx     #$00
+	lda     (sp),y
+	jsr     shlax3
+	sta     ptr1
+	stx     ptr1+1
+	ldx     #$00
+	lda     _i
+	asl     a
+	bcc     L0010
+	inx
+	clc
+L0010:	adc     ptr1
+	pha
+	txa
+	adc     ptr1+1
+	tax
+	pla
+	clc
+	adc     #$01
+	bcc     L0008
+	inx
+L0008:	jsr     aslax4
+	clc
+	adc     #<(_menu)
+	tay
+	txa
+	adc     #>(_menu)
+	tax
+	tya
+	jsr     _put_str
+;
+; for(i = 0; i < 4; ++i){
+;
+	inc     _i
+	jmp     L0011
+;
+; ppu_on_all(); 
+;
+L0003:	jsr     _ppu_on_all
+;
+; }
+;
+	jmp     incsp1
+
+.endproc
+
+; ---------------------------------------------------------------
 ; void __near__ handleMenuInput (void)
 ; ---------------------------------------------------------------
 
@@ -219,9 +422,9 @@ L0003:	jmp     incsp4
 ;
 	lda     _pad1Next
 	and     #$08
-	beq     L0015
+	beq     L001B
 	lda     _menuIndexV
-	beq     L0015
+	beq     L001B
 ;
 ; cursorY -= 16;
 ;
@@ -246,12 +449,12 @@ L0003:	jmp     incsp4
 ;
 ; if((pad1Next & PAD_DOWN) && (menuIndexV < 3)){ 
 ;
-L0015:	lda     _pad1Next
+L001B:	lda     _pad1Next
 	and     #$04
-	beq     L0019
+	beq     L001F
 	lda     _menuIndexV
 	cmp     #$03
-	bcs     L0019
+	bcs     L001F
 ;
 ; cursorY += 16;
 ;
@@ -276,11 +479,11 @@ L0015:	lda     _pad1Next
 ;
 ; if((pad1Next & PAD_LEFT) && menuIndexH){
 ;
-L0019:	lda     _pad1Next
+L001F:	lda     _pad1Next
 	and     #$02
-	beq     L001D
+	beq     L0023
 	lda     _menuIndexH
-	beq     L001D
+	beq     L0023
 ;
 ; cursorX -= 136;
 ;
@@ -305,16 +508,15 @@ L0019:	lda     _pad1Next
 ;
 ; if((pad1Next & PAD_RIGHT) && !menuIndexH){
 ;
-L001D:	lda     _pad1Next
+L0023:	lda     _pad1Next
 	and     #$01
-	beq     L001F
+	beq     L0027
 	lda     _menuIndexH
-	beq     L0020
-L001F:	rts
+	bne     L0027
 ;
 ; cursorX += 136;
 ;
-L0020:	lda     #$88
+	lda     #$88
 	clc
 	adc     _cursorX
 	sta     _cursorX
@@ -333,9 +535,56 @@ L0020:	lda     #$88
 	ldy     #$00
 	sta     (ptr1),y
 ;
+; if((pad1Next & PAD_A)){
+;
+L0027:	lda     _pad1Next
+	and     #$80
+	beq     L002A
+;
+; if(page == 2) page = 0;
+;
+	lda     _page
+	cmp     #$02
+	bne     L0028
+	lda     #$00
+	sta     _page
+;
+; else ++page;
+;
+	jmp     L0029
+L0028:	inc     _page
+;
+; draw_bg_menu(page);
+;
+L0029:	lda     _page
+	jsr     _draw_bg_menu
+;
+; if((pad1Next & PAD_B)){
+;
+L002A:	lda     _pad1Next
+	and     #$40
+	beq     L0015
+;
+; if(!page) page = 2;
+;
+	lda     _page
+	bne     L002B
+	lda     #$02
+	sta     _page
+;
+; else --page;
+;
+	jmp     L002C
+L002B:	dec     _page
+;
+; draw_bg_menu(page);
+;
+L002C:	lda     _page
+	jmp     _draw_bg_menu
+;
 ; }
 ;
-	rts
+L0015:	rts
 
 .endproc
 
@@ -374,7 +623,7 @@ L0020:	lda     #$88
 ;
 	lda     #$00
 	sta     _i
-L002F:	lda     _i
+L0032:	lda     _i
 	cmp     #$08
 	jcs     L0003
 ;
@@ -431,14 +680,14 @@ L0009:	sta     ptr1
 	stx     ptr1+1
 	lda     _j
 	and     #$01
-	beq     L0030
+	beq     L0033
 	lda     _spr
 	eor     #$FF
 	clc
 	adc     #$01
-	jmp     L0031
-L0030:	lda     _spr
-L0031:	ldy     #$00
+	jmp     L0034
+L0033:	lda     _spr
+L0034:	ldy     #$00
 	sta     (ptr1),y
 ;
 ; spr = 1 + (rand8() % 3);
@@ -463,20 +712,20 @@ L000D:	sta     ptr1
 	stx     ptr1+1
 	lda     _j
 	and     #$01
-	beq     L0032
+	beq     L0035
 	lda     _spr
 	eor     #$FF
 	clc
 	adc     #$01
-	jmp     L0033
-L0032:	lda     _spr
-L0033:	ldy     #$00
+	jmp     L0036
+L0035:	lda     _spr
+L0036:	ldy     #$00
 	sta     (ptr1),y
 ;
 ; for(i = 0;i < BALLS_MAX; ++i){
 ;
 	inc     _i
-	jmp     L002F
+	jmp     L0032
 ;
 ; pal_bg(palette); // load the BG palette
 ;
@@ -495,8 +744,8 @@ L0003:	lda     #<(_palette)
 	ldx     #$20
 	lda     #$41
 	jsr     pushax
-	lda     #<(S0002)
-	ldx     #>(S0002)
+	lda     #<(S0021)
+	ldx     #>(S0021)
 	jsr     _put_str
 ;
 ; put_str(NTADR_A(1, 4), "VIDEO MODE:");
@@ -504,8 +753,8 @@ L0003:	lda     #<(_palette)
 	ldx     #$20
 	lda     #$81
 	jsr     pushax
-	lda     #<(S0003)
-	ldx     #>(S0003)
+	lda     #<(S0022)
+	ldx     #>(S0022)
 	jsr     _put_str
 ;
 ; if(ppu_system()) put_str(NTADR_A(1, 5), "NTSC");
@@ -516,81 +765,18 @@ L0003:	lda     #<(_palette)
 	ldx     #$20
 	lda     #$A1
 	jsr     pushax
-	lda     #<(S0004)
-	ldx     #>(S0004)
+	lda     #<(S0023)
+	ldx     #>(S0023)
 ;
 ; else put_str(NTADR_A(1, 5), "PAL");
 ;
-	jmp     L002D
+	jmp     L002F
 L0010:	ldx     #$20
 	lda     #$A1
 	jsr     pushax
-	lda     #<(S0005)
-	ldx     #>(S0005)
-L002D:	jsr     _put_str
-;
-; put_str(NTADR_A(1, 7), "SUPER MARIO BROS");
-;
-	ldx     #$20
-	lda     #$E1
-	jsr     pushax
-	lda     #<(S0006)
-	ldx     #>(S0006)
-	jsr     _put_str
-;
-; put_str(NTADR_A(1, 9), "MEGA MAN 2");
-;
-	ldx     #$21
-	txa
-	jsr     pushax
-	lda     #<(S0007)
-	ldx     #>(S0007)
-	jsr     _put_str
-;
-; put_str(NTADR_A(1, 11), "FINAL FANTASY");
-;
-	ldx     #$21
-	lda     #$61
-	jsr     pushax
-	lda     #<(S0008)
-	ldx     #>(S0008)
-	jsr     _put_str
-;
-; put_str(NTADR_A(1, 13), "NINJA GAIDEN");
-;
-	ldx     #$21
-	lda     #$A1
-	jsr     pushax
-	lda     #<(S0009)
-	ldx     #>(S0009)
-	jsr     _put_str
-;
-; put_str(NTADR_A(18, 7), "SUPER MARIO 3");
-;
-	ldx     #$20
-	lda     #$F2
-	jsr     pushax
-	lda     #<(S000A)
-	ldx     #>(S000A)
-	jsr     _put_str
-;
-; put_str(NTADR_A(18, 9), "TETRIS");
-;
-	ldx     #$21
-	lda     #$32
-	jsr     pushax
-	lda     #<(S000B)
-	ldx     #>(S000B)
-	jsr     _put_str
-;
-; put_str(NTADR_A(1, 16), "3 MSB OF 400D:");
-;
-	ldx     #$22
-	lda     #$01
-	jsr     pushax
-	lda     #<(S000C)
-	ldx     #>(S000C)
-	jsr     _put_str
+	lda     #<(S0024)
+	ldx     #>(S0024)
+L002F:	jsr     _put_str
 ;
 ; ppu_on_all();
 ;
@@ -612,7 +798,7 @@ L0012:	jsr     _ppu_wait_nmi
 ; for(i = 0; i < BALLS_MAX; ++i){
 ;
 	sta     _i
-L0034:	lda     _i
+L0037:	lda     _i
 	cmp     #$08
 	jcs     L0016
 ;
@@ -633,7 +819,7 @@ L0034:	lda     _i
 ;
 ; else oam_spr(ball_x[i], ball_y[i], 0x46, i % 4);
 ;
-	jmp     L0039
+	jmp     L003C
 L0019:	jsr     decsp3
 	ldy     _i
 	lda     _ball_x,y
@@ -644,7 +830,7 @@ L0019:	jsr     decsp3
 	ldy     #$01
 	sta     (sp),y
 	lda     #$46
-L0039:	dey
+L003C:	dey
 	sta     (sp),y
 	lda     _i
 	and     #$03
@@ -720,7 +906,7 @@ L0025:	sta     ptr1
 L0023:	ldy     _i
 	lda     _ball_y,y
 	cmp     #$E8
-	bcc     L0035
+	bcc     L0038
 	lda     #<(_ball_dy)
 	ldx     #>(_ball_dy)
 	clc
@@ -739,8 +925,8 @@ L0029:	sta     ptr1
 ;
 ; for(i = 0; i < BALLS_MAX; ++i){
 ;
-L0035:	inc     _i
-	jmp     L0034
+L0038:	inc     _i
+	jmp     L0037
 ;
 ; oam_spr(cursorX, cursorY, 0x7F, 0x00);
 ;
@@ -773,14 +959,13 @@ L0016:	jsr     decsp3
 ;
 	jsr     _handleMenuInput
 ;
-; p2val = *p2;
+; p2val = menuIndexH + menuIndexV * 2;
 ;
-	lda     _p2+1
-	sta     ptr1+1
-	lda     _p2
-	sta     ptr1
-	ldy     #$00
-	lda     (ptr1),y
+	lda     _menuIndexV
+	asl     a
+	bcc     L0031
+	clc
+L0031:	adc     _menuIndexH
 	sta     _p2val
 ;
 ; p2low = p2val & 0x0F;
