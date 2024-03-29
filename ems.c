@@ -69,7 +69,7 @@ unsigned char menuIndexV = 0;
 unsigned char page = 0;
 
 // Menu entries
-
+unsigned char* menupointer = (unsigned char*)0x30C;
 unsigned char menu[32][ENTRY_SIZE] = {
 
 	"S. MARIO BROS",	"S. MARIO BROS 2",	"S. MARIO BROS 3",	"DONKEY KONG",	"DONKEY KONG 2",	"MEGA MAN",			"MEGA MAN 2",		"MEGA MAN 3",
@@ -108,8 +108,17 @@ void put_str(unsigned int adr, const char* str){
 
 // Draw the menu entries. Can only be done when the screen is off
 void draw_bg_menu(const unsigned char page){
-	clear_vram_buffer();
+
 	ppu_off();
+
+	for(i = 0; i < 4; ++i){
+
+		put_str(NTADR_A(1, i * 2 + 7), "                ");
+		put_str(NTADR_A(17, i *2 + 7), "                ");
+
+	}
+
+
 	for(i = 0; i < 4; ++i){
 		
 		put_str(NTADR_A(1, i * 2 + 7), menu[(page * 8) + (i * 2)]);
@@ -120,7 +129,6 @@ void draw_bg_menu(const unsigned char page){
 }
 
 // Another function, handles input and logic
-
 void handleMenuInput(void){
 
 	// Up the menu, only move up if we are not at the top of the menu
@@ -128,6 +136,7 @@ void handleMenuInput(void){
 		cursorY -= 16;
 		--menuIndexV;
 		*p2 = 0xAE;
+		*menupointer = 'D';
 		
 	}
 
@@ -136,7 +145,7 @@ void handleMenuInput(void){
 		cursorY += 16;
 		++menuIndexV;
 		*p2 = 0xB1;
-		
+		*menupointer = 'T';
 	}
 
 	// Left, same conditions horizontally
@@ -150,7 +159,7 @@ void handleMenuInput(void){
 
 	// Right
 	if((pad1Next & PAD_RIGHT) && !menuIndexH){
-		cursorX += 136;
+		cursorX += 128;
 		++menuIndexH;
 		*p2 = 0x49;
 		
@@ -159,15 +168,19 @@ void handleMenuInput(void){
 	// A or right page flip
 	if((pad1Next & PAD_A)){
 
-		if(page == 2) page = 0;
+		if(page == 3) page = 0;
 		else ++page;
+		clear_vram_buffer();
 		draw_bg_menu(page);
+
+
 	}
 
 	if((pad1Next & PAD_B)){
 
-		if(!page) page = 2;
+		if(!page) page = 3;
 		else --page;
+		clear_vram_buffer();
 		draw_bg_menu(page);
 	}
 
@@ -208,7 +221,10 @@ void main (void) {
 		if(ppu_system()) put_str(NTADR_A(1, 5), "NTSC");
 		else put_str(NTADR_A(1, 5), "PAL");
 
-
+		
+		put_str(NTADR_A(7, 16), "INDEX: ");
+		put_str(NTADR_A(8, 17), "PAGE: ");
+		draw_bg_menu(page);
 		ppu_on_all();
 
 
@@ -219,7 +235,6 @@ void main (void) {
 		ppu_wait_nmi();
 		oam_clear();
 		
-
 		spr = 0;
 
 		for(i = 0; i < BALLS_MAX; ++i){
@@ -242,15 +257,17 @@ void main (void) {
 		handleMenuInput();
 
 		//Player 2 register logic
-		p2val = menuIndexH + menuIndexV * 2;
+		p2val = menuIndexH + menuIndexV * 2 + page * 8;
 		p2low = p2val & 0x0F;
 		p2low += 0x30;
+		if(p2low >= 58) p2low += 7;
 		p2high = p2val & 0xF0;
 		p2high = p2high >> 4;
 		p2high += 0x30;
 
 		oam_spr(0x88, 0x80, p2low, 0x0);
 		oam_spr(0x80, 0x80, p2high, 0x0);
+		oam_spr(0x88, 0x88, page + 0x30, 0x0);
 
 	}
 }

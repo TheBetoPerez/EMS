@@ -39,6 +39,7 @@
 	.export		_menuIndexH
 	.export		_menuIndexV
 	.export		_page
+	.export		_menupointer
 	.export		_menu
 	.export		_cursorX
 	.export		_cursorY
@@ -69,6 +70,8 @@ _menuIndexV:
 	.byte	$00
 _page:
 	.byte	$00
+_menupointer:
+	.word	$030C
 _menu:
 	.byte	$53,$2E,$20,$4D,$41,$52,$49,$4F,$20,$42,$52,$4F,$53,$00
 	.res	2,$00
@@ -173,12 +176,20 @@ _palette:
 	.byte	$00
 	.byte	$00
 S0022:
-	.byte	$56,$49,$44,$45,$4F,$20,$4D,$4F,$44,$45,$3A,$00
-S0021:
-	.byte	$47,$4F,$20,$47,$41,$54,$4F,$52,$53,$21,$00
-S0023:
-	.byte	$4E,$54,$53,$43,$00
+	.byte	$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
+	.byte	$00
+S0021	:=	S0022+0
 S0024:
+	.byte	$56,$49,$44,$45,$4F,$20,$4D,$4F,$44,$45,$3A,$00
+S0023:
+	.byte	$47,$4F,$20,$47,$41,$54,$4F,$52,$53,$21,$00
+S0027:
+	.byte	$49,$4E,$44,$45,$58,$3A,$20,$00
+S0028:
+	.byte	$50,$41,$47,$45,$3A,$20,$00
+S0025:
+	.byte	$4E,$54,$53,$43,$00
+S0026:
 	.byte	$50,$41,$4C,$00
 
 .segment	"BSS"
@@ -272,10 +283,6 @@ L0003:	jmp     incsp4
 ;
 	jsr     pusha
 ;
-; clear_vram_buffer();
-;
-	jsr     _clear_vram_buffer
-;
 ; ppu_off();
 ;
 	jsr     _ppu_off
@@ -284,22 +291,87 @@ L0003:	jmp     incsp4
 ;
 	lda     #$00
 	sta     _i
-L0011:	lda     _i
+L001B:	lda     _i
 	cmp     #$04
-	jcs     L0003
+	bcs     L001C
+;
+; put_str(NTADR_A(1, i * 2 + 7), "                ");
+;
+	ldx     #$00
+	lda     _i
+	asl     a
+	bcc     L0015
+	inx
+	clc
+L0015:	adc     #$07
+	bcc     L0006
+	inx
+L0006:	jsr     aslax4
+	stx     tmp1
+	asl     a
+	rol     tmp1
+	ora     #$01
+	pha
+	lda     tmp1
+	ora     #$20
+	tax
+	pla
+	jsr     pushax
+	lda     #<(S0021)
+	ldx     #>(S0021)
+	jsr     _put_str
+;
+; put_str(NTADR_A(17, i *2 + 7), "                ");
+;
+	ldx     #$00
+	lda     _i
+	asl     a
+	bcc     L0016
+	inx
+	clc
+L0016:	adc     #$07
+	bcc     L0007
+	inx
+L0007:	jsr     aslax4
+	stx     tmp1
+	asl     a
+	rol     tmp1
+	ora     #$11
+	pha
+	lda     tmp1
+	ora     #$20
+	tax
+	pla
+	jsr     pushax
+	lda     #<(S0022)
+	ldx     #>(S0022)
+	jsr     _put_str
+;
+; for(i = 0; i < 4; ++i){
+;
+	inc     _i
+	jmp     L001B
+;
+; for(i = 0; i < 4; ++i){
+;
+L001C:	lda     #$00
+	sta     _i
+L001D:	lda     _i
+	cmp     #$04
+	jcs     L0009
 ;
 ; put_str(NTADR_A(1, i * 2 + 7), menu[(page * 8) + (i * 2)]);
 ;
 	ldx     #$00
 	lda     _i
 	asl     a
-	bcc     L000D
+	bcc     L0017
 	inx
 	clc
-L000D:	adc     #$07
-	bcc     L0006
+L0017:	adc     #$07
+	bcc     L000C
 	inx
-L0006:	jsr     aslax4
+L000C:	jsr     aslax4
 	stx     tmp1
 	asl     a
 	rol     tmp1
@@ -319,10 +391,10 @@ L0006:	jsr     aslax4
 	ldx     #$00
 	lda     _i
 	asl     a
-	bcc     L000E
+	bcc     L0018
 	inx
 	clc
-L000E:	adc     ptr1
+L0018:	adc     ptr1
 	pha
 	txa
 	adc     ptr1+1
@@ -343,13 +415,13 @@ L000E:	adc     ptr1
 	ldx     #$00
 	lda     _i
 	asl     a
-	bcc     L000F
+	bcc     L0019
 	inx
 	clc
-L000F:	adc     #$07
-	bcc     L0007
+L0019:	adc     #$07
+	bcc     L000D
 	inx
-L0007:	jsr     aslax4
+L000D:	jsr     aslax4
 	stx     tmp1
 	asl     a
 	rol     tmp1
@@ -369,10 +441,10 @@ L0007:	jsr     aslax4
 	ldx     #$00
 	lda     _i
 	asl     a
-	bcc     L0010
+	bcc     L001A
 	inx
 	clc
-L0010:	adc     ptr1
+L001A:	adc     ptr1
 	pha
 	txa
 	adc     ptr1+1
@@ -380,9 +452,9 @@ L0010:	adc     ptr1
 	pla
 	clc
 	adc     #$01
-	bcc     L0008
+	bcc     L000E
 	inx
-L0008:	jsr     aslax4
+L000E:	jsr     aslax4
 	clc
 	adc     #<(_menu)
 	tay
@@ -395,11 +467,11 @@ L0008:	jsr     aslax4
 ; for(i = 0; i < 4; ++i){
 ;
 	inc     _i
-	jmp     L0011
+	jmp     L001D
 ;
 ; ppu_on_all(); 
 ;
-L0003:	jsr     _ppu_on_all
+L0009:	jsr     _ppu_on_all
 ;
 ; }
 ;
@@ -447,6 +519,15 @@ L0003:	jsr     _ppu_on_all
 	ldy     #$00
 	sta     (ptr1),y
 ;
+; *menupointer = 'D';
+;
+	lda     _menupointer+1
+	sta     ptr1+1
+	lda     _menupointer
+	sta     ptr1
+	lda     #$44
+	sta     (ptr1),y
+;
 ; if((pad1Next & PAD_DOWN) && (menuIndexV < 3)){ 
 ;
 L001B:	lda     _pad1Next
@@ -477,6 +558,15 @@ L001B:	lda     _pad1Next
 	ldy     #$00
 	sta     (ptr1),y
 ;
+; *menupointer = 'T';
+;
+	lda     _menupointer+1
+	sta     ptr1+1
+	lda     _menupointer
+	sta     ptr1
+	lda     #$54
+	sta     (ptr1),y
+;
 ; if((pad1Next & PAD_LEFT) && menuIndexH){
 ;
 L001F:	lda     _pad1Next
@@ -485,11 +575,11 @@ L001F:	lda     _pad1Next
 	lda     _menuIndexH
 	beq     L0023
 ;
-; cursorX -= 136;
+; cursorX -= 128;
 ;
 	lda     _cursorX
 	sec
-	sbc     #$88
+	sbc     #$80
 	sta     _cursorX
 ;
 ; --menuIndexH;
@@ -514,9 +604,9 @@ L0023:	lda     _pad1Next
 	lda     _menuIndexH
 	bne     L0027
 ;
-; cursorX += 136;
+; cursorX += 128;
 ;
-	lda     #$88
+	lda     #$80
 	clc
 	adc     _cursorX
 	sta     _cursorX
@@ -539,47 +629,55 @@ L0023:	lda     _pad1Next
 ;
 L0027:	lda     _pad1Next
 	and     #$80
-	beq     L002A
+	beq     L0029
 ;
-; if(page == 2) page = 0;
+; if(page == 3) page = 0;
 ;
 	lda     _page
-	cmp     #$02
+	cmp     #$03
 	bne     L0028
 	lda     #$00
 	sta     _page
 ;
 ; else ++page;
 ;
-	jmp     L0029
+	jmp     L0014
 L0028:	inc     _page
+;
+; clear_vram_buffer();
+;
+L0014:	jsr     _clear_vram_buffer
 ;
 ; draw_bg_menu(page);
 ;
-L0029:	lda     _page
+	lda     _page
 	jsr     _draw_bg_menu
 ;
 ; if((pad1Next & PAD_B)){
 ;
-L002A:	lda     _pad1Next
+L0029:	lda     _pad1Next
 	and     #$40
 	beq     L0015
 ;
-; if(!page) page = 2;
+; if(!page) page = 3;
 ;
 	lda     _page
-	bne     L002B
-	lda     #$02
+	bne     L002A
+	lda     #$03
 	sta     _page
 ;
 ; else --page;
 ;
-	jmp     L002C
-L002B:	dec     _page
+	jmp     L0017
+L002A:	dec     _page
+;
+; clear_vram_buffer();
+;
+L0017:	jsr     _clear_vram_buffer
 ;
 ; draw_bg_menu(page);
 ;
-L002C:	lda     _page
+	lda     _page
 	jmp     _draw_bg_menu
 ;
 ; }
@@ -623,7 +721,7 @@ L0015:	rts
 ;
 	lda     #$00
 	sta     _i
-L0032:	lda     _i
+L0034:	lda     _i
 	cmp     #$08
 	jcs     L0003
 ;
@@ -680,14 +778,14 @@ L0009:	sta     ptr1
 	stx     ptr1+1
 	lda     _j
 	and     #$01
-	beq     L0033
+	beq     L0035
 	lda     _spr
 	eor     #$FF
 	clc
 	adc     #$01
-	jmp     L0034
-L0033:	lda     _spr
-L0034:	ldy     #$00
+	jmp     L0036
+L0035:	lda     _spr
+L0036:	ldy     #$00
 	sta     (ptr1),y
 ;
 ; spr = 1 + (rand8() % 3);
@@ -712,20 +810,20 @@ L000D:	sta     ptr1
 	stx     ptr1+1
 	lda     _j
 	and     #$01
-	beq     L0035
+	beq     L0037
 	lda     _spr
 	eor     #$FF
 	clc
 	adc     #$01
-	jmp     L0036
-L0035:	lda     _spr
-L0036:	ldy     #$00
+	jmp     L0038
+L0037:	lda     _spr
+L0038:	ldy     #$00
 	sta     (ptr1),y
 ;
 ; for(i = 0;i < BALLS_MAX; ++i){
 ;
 	inc     _i
-	jmp     L0032
+	jmp     L0034
 ;
 ; pal_bg(palette); // load the BG palette
 ;
@@ -744,8 +842,8 @@ L0003:	lda     #<(_palette)
 	ldx     #$20
 	lda     #$41
 	jsr     pushax
-	lda     #<(S0021)
-	ldx     #>(S0021)
+	lda     #<(S0023)
+	ldx     #>(S0023)
 	jsr     _put_str
 ;
 ; put_str(NTADR_A(1, 4), "VIDEO MODE:");
@@ -753,8 +851,8 @@ L0003:	lda     #<(_palette)
 	ldx     #$20
 	lda     #$81
 	jsr     pushax
-	lda     #<(S0022)
-	ldx     #>(S0022)
+	lda     #<(S0024)
+	ldx     #>(S0024)
 	jsr     _put_str
 ;
 ; if(ppu_system()) put_str(NTADR_A(1, 5), "NTSC");
@@ -765,18 +863,41 @@ L0003:	lda     #<(_palette)
 	ldx     #$20
 	lda     #$A1
 	jsr     pushax
-	lda     #<(S0023)
-	ldx     #>(S0023)
+	lda     #<(S0025)
+	ldx     #>(S0025)
 ;
 ; else put_str(NTADR_A(1, 5), "PAL");
 ;
-	jmp     L002F
+	jmp     L0031
 L0010:	ldx     #$20
 	lda     #$A1
 	jsr     pushax
-	lda     #<(S0024)
-	ldx     #>(S0024)
-L002F:	jsr     _put_str
+	lda     #<(S0026)
+	ldx     #>(S0026)
+L0031:	jsr     _put_str
+;
+; put_str(NTADR_A(7, 16), "INDEX: ");
+;
+	ldx     #$22
+	lda     #$07
+	jsr     pushax
+	lda     #<(S0027)
+	ldx     #>(S0027)
+	jsr     _put_str
+;
+; put_str(NTADR_A(8, 17), "PAGE: ");
+;
+	ldx     #$22
+	lda     #$28
+	jsr     pushax
+	lda     #<(S0028)
+	ldx     #>(S0028)
+	jsr     _put_str
+;
+; draw_bg_menu(page);
+;
+	lda     _page
+	jsr     _draw_bg_menu
 ;
 ; ppu_on_all();
 ;
@@ -798,7 +919,7 @@ L0012:	jsr     _ppu_wait_nmi
 ; for(i = 0; i < BALLS_MAX; ++i){
 ;
 	sta     _i
-L0037:	lda     _i
+L0039:	lda     _i
 	cmp     #$08
 	jcs     L0016
 ;
@@ -819,7 +940,7 @@ L0037:	lda     _i
 ;
 ; else oam_spr(ball_x[i], ball_y[i], 0x46, i % 4);
 ;
-	jmp     L003C
+	jmp     L003F
 L0019:	jsr     decsp3
 	ldy     _i
 	lda     _ball_x,y
@@ -830,7 +951,7 @@ L0019:	jsr     decsp3
 	ldy     #$01
 	sta     (sp),y
 	lda     #$46
-L003C:	dey
+L003F:	dey
 	sta     (sp),y
 	lda     _i
 	and     #$03
@@ -906,7 +1027,7 @@ L0025:	sta     ptr1
 L0023:	ldy     _i
 	lda     _ball_y,y
 	cmp     #$E8
-	bcc     L0038
+	bcc     L003A
 	lda     #<(_ball_dy)
 	ldx     #>(_ball_dy)
 	clc
@@ -925,8 +1046,8 @@ L0029:	sta     ptr1
 ;
 ; for(i = 0; i < BALLS_MAX; ++i){
 ;
-L0038:	inc     _i
-	jmp     L0037
+L003A:	inc     _i
+	jmp     L0039
 ;
 ; oam_spr(cursorX, cursorY, 0x7F, 0x00);
 ;
@@ -959,13 +1080,28 @@ L0016:	jsr     decsp3
 ;
 	jsr     _handleMenuInput
 ;
-; p2val = menuIndexH + menuIndexV * 2;
+; p2val = menuIndexH + menuIndexV * 2 + page * 8;
 ;
+	ldx     #$00
 	lda     _menuIndexV
 	asl     a
-	bcc     L0031
+	bcc     L0033
+	inx
 	clc
-L0031:	adc     _menuIndexH
+L0033:	adc     _menuIndexH
+	bcc     L0030
+	inx
+L0030:	sta     ptr1
+	stx     ptr1+1
+	ldx     #$00
+	lda     _page
+	jsr     shlax3
+	clc
+	adc     ptr1
+	pha
+	txa
+	adc     ptr1+1
+	pla
 	sta     _p2val
 ;
 ; p2low = p2val & 0x0F;
@@ -980,9 +1116,18 @@ L0031:	adc     _menuIndexH
 	adc     _p2low
 	sta     _p2low
 ;
+; if(p2low >= 58) p2low += 7;
+;
+	cmp     #$3A
+	bcc     L003B
+	lda     #$07
+	clc
+	adc     _p2low
+	sta     _p2low
+;
 ; p2high = p2val & 0xF0;
 ;
-	lda     _p2val
+L003B:	lda     _p2val
 	and     #$F0
 	sta     _p2high
 ;
@@ -1025,6 +1170,22 @@ L0031:	adc     _menuIndexH
 	dey
 	sta     (sp),y
 	lda     _p2high
+	dey
+	sta     (sp),y
+	tya
+	jsr     _oam_spr
+;
+; oam_spr(0x88, 0x88, page + 0x30, 0x0);
+;
+	jsr     decsp3
+	lda     #$88
+	ldy     #$02
+	sta     (sp),y
+	dey
+	sta     (sp),y
+	lda     _page
+	clc
+	adc     #$30
 	dey
 	sta     (sp),y
 	tya
