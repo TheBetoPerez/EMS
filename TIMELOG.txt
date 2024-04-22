@@ -1,12 +1,19 @@
-AS OF 4/19/24, SOURCE IS DISCORD'S TIME LOG CHANNEL
+AS OF 4/22/24, SOURCE IS DISCORD'S TIME LOG CHANNEL
 
 Eriberto Perez: 41.25 (21.25 pre-alpha) 
-Steven Miller: 60 (25 pre-alpha)
+Steven Miller: 66 (25 pre-alpha)
 Patrick Lehman: 23.15 (14.5 pre-alpha)
 Kieran Abesamis: 27.5 (16.5 pre-alpha)
 Jonas Wood: 24.5 (14.5 pre-alpha)
 
-Total hourS: 177 hours 
+Total Timelog Hours: 183 hours 
+
+NOTE: These hours do not include documentation OR our weekly meetings with Carsten. The timelog hours include research and expermientation. 
+
+Number of Weekly Meetings: 9  (10-20 hours each team member, 1-2 Hours per meeting) 
+Documentation (Pre-Alpha Build, Prototype Presentation, Design Draft/Revision): 20 hours total
+
+**Estimated Project Hours: 300 hours**
 
 ****************************************************
 ****************************************************
@@ -417,5 +424,10 @@ Date: Friday April 19, 2024
 Time: 2 - 5pm
 Task: Started Design prototype document, researched DE10-Nano pin assignments/push-button inputs, attempted compilation of LED output on new NES core w/Steven
 
-ADDITIONAL (PRE-ALPHA): 
+Steven Miller - 4/19/24 at 6:08PM
+Date: Friday April 19, 2024
+Time: 12:00pm - 6:00pm
+Task: outputting graphics from the core (success!)
+
+ADDITIONAL (PROTOTYPE): 
 Jonas + Patrick's Research on the Mapper for NES - 2 Hours Each (4 total)
