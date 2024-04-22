@@ -13,7 +13,7 @@ NOTE: These hours do not include documentation OR our weekly meetings with Carst
 Number of Weekly Meetings: 9  (10-20 hours each team member, 1-2 Hours per meeting) 
 Documentation (Pre-Alpha Build, Prototype Presentation, Design Draft/Revision): 20 hours total
 
-**Estimated Project Hours: 300 hours**
+**Estimated Project Hours: 270 hours**
 
 ****************************************************
 ****************************************************
