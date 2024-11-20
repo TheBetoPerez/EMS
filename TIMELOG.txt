@@ -1,12 +1,26 @@
-Eriberto Perez: 21.25
-Steven Miller: 25.0
-Patrick Lehman: 14.5
-Kieran Abesamis: 16.5
-Jonas Wood: 14.5
+AS OF 4/22/24, SOURCE IS DISCORD'S TIME LOG CHANNEL
 
-Total hours 91.75
+Eriberto Perez: 41.25 (21.25 pre-alpha) 
+Steven Miller: 66 (25 pre-alpha)
+Patrick Lehman: 23.15 (14.5 pre-alpha)
+Kieran Abesamis: 27.5 (16.5 pre-alpha)
+Jonas Wood: 24.5 (14.5 pre-alpha)
 
-We are well within our 60-100 hour requirement. Great job guys!
+Total Timelog Hours: 183 hours 
+
+NOTE: These hours do not include documentation OR our weekly meetings with Carsten. The timelog hours include research and expermientation. 
+
+Number of Weekly Meetings: 9  (10-20 hours each team member, 1-2 Hours per meeting) 
+Documentation (Pre-Alpha Build, Prototype Presentation, Design Draft/Revision): 20 hours total
+
+**Estimated Project Hours: 270 hours**
+
+****************************************************
+****************************************************
+********* PRE ALPHA BUILD TIME LOG *****************
+****************************************************
+****************************************************
+*********DATES: 2/28/24 - 3/28/24*******************
 
 2 28 24
 Steven Miller — 02/28/2024 11:20 AM
@@ -242,8 +256,7 @@ Time: 1:00PM-1:45PM, 3:00PM-4:30PM
 Task: Discussed Hardware next steps, Pre-Alpha Build Diagram, report for Architectural components
 
 
-
-ADDITIONAL:
+ADDITIONAL (PRE-ALPHA): 
 Software (Beto, Patrick, Jonas) watched videos and read wikis on how to get started in writing code that can run on the NES. This research comes to about 3 hours each for finishing the tutorials, experimentation, and reading documentation
 https://www.youtube.com/watch?v=yEiNs7pKNh8&list=PLgvDB6LWam2WvoFvh8tlUqbqw92qWM0aP
 https://www.nesdev.org/wiki/Nesdev_Wiki
@@ -253,5 +266,168 @@ Hardware (Steven, Patrick, Kieran) have had much research and conversation into 
 
 Additionally, Patrick has pushed some commits with Jonas on input detection logic (2 hours each)
 
+****************************************************
+****************************************************
+********* PROTOTYPE BUILD TIME LOG ************
+****************************************************
+****************************************************
+*********DATES: 3/29/24 - 4/19/24*******************
 
 
+Jonas Wood - 04/02/2024 1:50 PM 
+Date: Tuesday 4/2/24
+Time: 1:00PM - 1:50PM
+Task: Made a C and C++ program to transfer file(s) from an SD card to another file path on Windows. 
+Will have to modify to work on microprocessor once acquired.
+
+Steven Miller — 04/04/2024 2:54 PM
+date: April 4, 2024
+start: 1:00 pm
+end: 3:00 pm
+task: diagnosing display issue with MISTER
+
+Steven Miller — 04/04/2024 7:27 PM
+date: April 4, 2024
+start: 6:00 pm
+end: 7:00 pm
+task: setting up de-10 nano
+
+Steven Miller — 04/09/2024 5:55 PM
+date: April 9, 2024
+start: 11:00 am
+end: 6:00 pm
+task: researching 6502 based CPU
+
+Kieran Abesamis — 04/09/2024 7:39 PM
+Date: Tuesday April 9, 2024
+Time: 7:00PM-7:40PM
+Task: DE10 Lite APU Research -> NES APU Research. Found out registers on original NES. 
+DE10 Lite will be hard to mimic audio but will still be able to execute OG graphics via something like VGA. 
+Might need to find something extra for audio. Microcontroller? Display Pi? Also reviewed Pre-Alpha build comments 
+
+Beto Perez — 04/09/2024 11:40 PM
+Tuesday - April 9 2024
+Time: 7:30 PM - 11:30 PM 
+Task: Finalizng findings on PPU (Pin outs)
+**I also want to count an extra 3 hours over the weekend that I forgot to log**
+
+Kieran Abesamis — 04/10/2024 1:10 PM
+Date: Wednesday April 9, 2024
+Time: 11:30AM - 12:30PM
+Task: NES APU Research. Compiled notes for how the OG NES worked (in electronics channel). 
+Discussed with Steven how its easier to understand than the PPU and the audio is dependent 
+on what complex games we wanna run because each channel acts individually. 
+
+Steven Miller — 04/10/2024 2:19 PM
+Date: Wednesday April 9, 2024
+Time: 11:00AM - 1:20PM
+Task: NES CPU research, wrote separate DMA component in verilog.
+
+Patrick Lehman — 04/12/2024 4:40 PM
+Date: Thursday April 10
+Time: 1:30-2:45
+Task: Researched Mapper program, ran Jonas’ program
+
+Steven Miller — 04/12/2024 6:23 PM
+Date: Friday April 12
+Time: 12:00pm-3:00pm
+Task: researching verilog code
+
+Steven Miller — 04/13/2024 6:15 PM
+Date: Saturday April 13
+Time: 4:00pm-6:15pm
+Task: making verilog tutorials for the crew 
+
+Steven Miller — 04/14/2024 8:10 PM
+Date: sunday April 14 
+Time: 4:00pm - 8:00pm 
+Task: creating filter to mimic CRT effects
+
+Steven Miller — 04/15/2024 4:47 PM
+Date: Monday April 15 
+Time: 2:20pm - 3:20pm 
+Task: researching CPU, adding debug lines.
+
+Steven Miller — 04/15/2024 10:03 PM
+Date: Monday April 15 
+Time: 8:30pm - 10:00pm 
+Task: working on CRT filters
+
+Kieran Abesamis — 04/16/2024 1:44 PM
+Date: Tuesday April 16, 2024
+Time: 12:35PM - 1:45PM, 3:00PM - 4:30PM
+Task: Staring at NES DMA RTL Viewer. Research on DMA on NES + DE10 Nano. 
+Reviewed Beto's Notes on PPU. Discussed Prototype Plans. 
+
+Steven Miller — 04/16/2024 1:45 PM
+Date: Tuesday April 16, 2024
+Time: 12:35PM - 1:45PM
+Task: Researching DMA
+
+Steven Miller — 04/16/2024 4:49 PM
+Date: Tuesday April 16, 2024
+Time: 2:45PM - 4:45PM
+Task: Researching NES core
+
+Kieran Abesamis — 04/17/2024 2:15 PM
+Date: Wednesday April 17, 2024
+Time: 1:00PM - 2:00PM
+Task: Figuring out NES Core and loading from SDRAM. Also studied Steven's Verilog tutorials.
+
+Steven Miller — Yesterday at 7:06 PM
+Date: Thursday April 17, 2024
+Time: 1:00PM - 6:00PM
+Task: modifying nes core and configuring de-10 nano
+
+Steven Miller — Today at 1:41 AM
+Date: Friday April 18, 2024
+Time: 10:00PM - 1:00AM
+Task: modifying nes core
+
+Jonas Wood — Today at 2:31 PM
+Date: Sunday April 14, 2024
+Time: 12:00PM - 2:00PM
+Task: researched DE-10 nano's ARM Cortex A9 microprocessor & C libraries
+Date: Tuesday April 16, 2024
+Time: 3:00PM - 5:00PM
+Task: setup ARM Development Studio and attempted to run sample C code on the chip in-lab. continued research on C libraries for Cortex A9
+
+Patrick Lehman — Today at 3:56 PM
+Date: Thursday April 17, 2024
+Time: 3pm - 5pm
+Task: Researching De 10 i/o and programming process via jtag 
+Date: Wednesday April 18, 2024
+Time: 2:00PM - 530pm
+Task: configuring raspberry pi, programming de 10 w armds
+
+
+Beto Perez — Today at 4:27 PM
+Tuesday - April 16 2024
+3:30 PM - 6:30 PM Working on board development
+Wednesday - April 17 2024
+3:30 PM - 6:30 PM Board development, trying to get a simple circuit on nano
+Thursday - April 18 2024
+3:30 PM - 6:30 PM Working on nes controller input detection. Some researched revealed that we don't have the core techincally at full functionality
+Friday - April 19 2024
+3:30 PM - 7:30 Figuring out video output and quartus problems. Not fun
+
+Kieran Abesamis - Today at 4:31PM
+Date: Thursday April 19, 2024
+Time: 1:00PM - 2:00PM, 7:00PM-8:00PM
+Task: Verilog Tutorials! Also figuring out NES Core for Prototype
+Date: Friday April 19,2024
+Time: 1:00PM - 5:00PM
+Task: Trying to get NES Core Output, attempted UART debugging techniques
+
+Jonas Wood - Today at 4:35PM
+Date: Friday April 19, 2024
+Time: 2 - 5pm
+Task: Started Design prototype document, researched DE10-Nano pin assignments/push-button inputs, attempted compilation of LED output on new NES core w/Steven
+
+Steven Miller - 4/19/24 at 6:08PM
+Date: Friday April 19, 2024
+Time: 12:00pm - 6:00pm
+Task: outputting graphics from the core (success!)
+
+ADDITIONAL (PROTOTYPE): 
+Jonas + Patrick's Research on the Mapper for NES - 2 Hours Each (4 total)
